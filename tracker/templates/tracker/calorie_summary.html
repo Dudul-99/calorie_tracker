@@ -1,0 +1,11 @@
+{% extends 'tracker/base.html' %}
+{% block content %}
+<h2>Today's Calorie Summary</h2>
+<p>Total Calories: {{ total_calories }}</p>
+<h3>Intakes:</h3>
+<ul>
+{% for intake in intakes %}
+    <li>{{ intake.food.name }} - {{ intake.quantity }}{% if intake.food.is_liquid %}ml{% else %}g{% endif %} ({{ intake.calculate_calories }} calories)</li>
+{% endfor %}
+</ul>
+{% endblock %}

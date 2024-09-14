@@ -1,0 +1,11 @@
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+<h1>Welcome to Calorie Tracker</h1>
+<p>Track your daily calorie intake with ease!</p>
+<ul>
+    <li><a href="{% url 'tracker:add_food' %}">Add New Food</a></li>
+    <li><a href="{% url 'tracker:add_intake' %}">Record Intake</a></li>
+    <li><a href="{% url 'tracker:calorie_summary' %}">View Calorie Summary</a></li>
+</ul>
+{% endblock %}
