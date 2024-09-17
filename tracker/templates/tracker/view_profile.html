@@ -1,0 +1,14 @@
+<!-- tracker/templates/tracker/view_profile.html -->
+{% extends 'tracker/base.html' %}
+
+{% block content %}
+<h2>User Profile</h2>
+<p>Username: {{ user.username }}</p>
+<p>Email: {{ user.email }}</p>
+<p>Age: {{ user.age|default:"Not provided" }}</p>
+<p>Height: {{ user.height|default:"Not provided" }} cm</p>
+<p>Weight: {{ user.weight|default:"Not provided" }} kg</p>
+<p>Gender: {{ user.get_gender_display|default:"Not provided" }}</p>
+<p>BMI: {{ bmi|default:"Not available" }}</p>
+<a href="{% url 'tracker:edit_profile' %}">Edit Profile</a>
+{% endblock %}

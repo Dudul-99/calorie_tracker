@@ -12,6 +12,11 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from .token import account_activation_token
 from .models import Food, Intake, CustomUser
 from .forms import FoodForm, IntakeForm, UserRegistrationForm
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .forms import UserProfileForm
+from .models import CustomUser
 
 def home(request):
     return render(request, 'tracker/home.html')
@@ -55,6 +60,26 @@ def activate(request, uidb64, token):
         return redirect('tracker:home')
     else:
         return render(request, 'tracker/activation_invalid.html')
+
+@login_required
+def view_profile(request):
+    user = request.user
+    bmi = user.calculate_bmi()
+    return render(request, 'tracker/view_profile.html', {'user': user, 'bmi': bmi})
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('tracker:view_profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    return render(request, 'tracker/edit_profile.html', {'form': form})
+
+
 
 # Keep your existing add_food, add_intake, and calorie_summary views here
 @login_required
