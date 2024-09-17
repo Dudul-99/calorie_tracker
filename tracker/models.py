@@ -1,5 +1,13 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
+
+class CustomUser(AbstractUser):
+    email = models.EmailField(_('email address'), unique=True)
+    is_email_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.username
 
 class Food(models.Model):
     name = models.CharField(max_length=100)
@@ -10,7 +18,7 @@ class Food(models.Model):
         return self.name
 
 class Intake(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     food = models.ForeignKey(Food, on_delete=models.CASCADE)
     quantity = models.FloatField()  # in grams or milliliters
     date = models.DateField(auto_now_add=True)
