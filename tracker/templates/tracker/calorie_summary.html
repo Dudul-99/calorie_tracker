@@ -1,11 +1,37 @@
+<!-- tracker/templates/tracker/calorie_summary.html -->
 {% extends 'tracker/base.html' %}
+
 {% block content %}
-<h2>Today's Calorie Summary</h2>
-<p>Total Calories: {{ total_calories }}</p>
+<h2>Calorie Summary for {{ date }}</h2>
+
+<form method="get">
+    <label for="date">Select Date:</label>
+    <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}">
+    <button type="submit">View Summary</button>
+</form>
+
+<h3>Total Nutrients:</h3>
+<p>Calories: {{ total_nutrients.calories|floatformat:2 }}</p>
+<p>Carbohydrates: {{ total_nutrients.carbs|floatformat:2 }}g</p>
+<p>Fats: {{ total_nutrients.fats|floatformat:2 }}g</p>
+<p>Proteins: {{ total_nutrients.proteins|floatformat:2 }}g</p>
+
 <h3>Intakes:</h3>
 <ul>
 {% for intake in intakes %}
-    <li>{{ intake.food.name }} - {{ intake.quantity }}{% if intake.food.is_liquid %}ml{% else %}g{% endif %} ({{ intake.calculate_calories }} calories)</li>
+    <li>
+        {{ intake.datetime|time:"H:i" }} - {{ intake.food.name }} 
+        ({{ intake.quantity }}{% if intake.food.is_liquid %}ml{% else %}g{% endif %})
+        <br>
+        Calories: {{ intake.calculate_nutrients.calories|floatformat:2 }},
+        Carbs: {{ intake.calculate_nutrients.carbs|floatformat:2 }}g,
+        Fats: {{ intake.calculate_nutrients.fats|floatformat:2 }}g,
+        Proteins: {{ intake.calculate_nutrients.proteins|floatformat:2 }}g
+    </li>
+{% empty %}
+    <li>No intakes recorded for this day.</li>
 {% endfor %}
 </ul>
+
+<a href="{% url 'tracker:add_intake' %}">Add New Intake</a>
 {% endblock %}

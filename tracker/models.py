@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
@@ -35,16 +37,27 @@ class Food(models.Model):
     def __str__(self):
         return self.name
 
+
+User = get_user_model()
+
 class Intake(models.Model):
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
-    food = models.ForeignKey(Food, on_delete=models.CASCADE)
-    quantity = models.FloatField()  # in grams or milliliters
-    date = models.DateField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    food = models.ForeignKey('Food', on_delete=models.CASCADE)
+    quantity = models.FloatField(help_text="Quantity in grams or milliliters")
+    datetime = models.DateTimeField(default=timezone.now)
 
     def calculate_calories(self):
         return (self.quantity / 100) * self.food.calories_per_100g
 
+    def calculate_nutrients(self):
+        factor = self.quantity / 100
+        return {
+            'calories': factor * self.food.calories_per_100g,
+            'carbs': factor * self.food.carbohydrates_per_100g,
+            'fats': factor * self.food.fats_per_100g,
+            'proteins': factor * self.food.proteins_per_100g
+        }
+
     def __str__(self):
-        return f"{self.user.username} - {self.food.name} - {self.date}"
-    
+        return f"{self.user.username} - {self.food.name} - {self.datetime}"
 

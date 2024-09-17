@@ -17,6 +17,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import UserProfileForm
 from .models import CustomUser
+from datetime import timedelta
 
 def home(request):
     return render(request, 'tracker/home.html')
@@ -93,6 +94,7 @@ def add_food(request):
         form = FoodForm()
     return render(request, 'tracker/add_food.html', {'form': form})
 
+
 @login_required
 def add_intake(request):
     if request.method == 'POST':
@@ -101,6 +103,7 @@ def add_intake(request):
             intake = form.save(commit=False)
             intake.user = request.user
             intake.save()
+            messages.success(request, 'Intake recorded successfully.')
             return redirect('tracker:calorie_summary')
     else:
         form = IntakeForm()
@@ -108,9 +111,29 @@ def add_intake(request):
 
 @login_required
 def calorie_summary(request):
-    today_intakes = Intake.objects.filter(user=request.user, date=timezone.now().date())
-    total_calories = sum(intake.calculate_calories() for intake in today_intakes)
-    return render(request, 'tracker/calorie_summary.html', {
-        'total_calories': total_calories,
-        'intakes': today_intakes
-    })
+    date = request.GET.get('date')
+    if date:
+        date = timezone.datetime.strptime(date, "%Y-%m-%d").date()
+    else:
+        date = timezone.now().date()
+
+    next_day = date + timedelta(days=1)
+    intakes = Intake.objects.filter(
+        user=request.user,
+        datetime__gte=date,
+        datetime__lt=next_day
+    ).order_by('datetime')
+
+    total_nutrients = {
+        'calories': sum(intake.calculate_nutrients()['calories'] for intake in intakes),
+        'carbs': sum(intake.calculate_nutrients()['carbs'] for intake in intakes),
+        'fats': sum(intake.calculate_nutrients()['fats'] for intake in intakes),
+        'proteins': sum(intake.calculate_nutrients()['proteins'] for intake in intakes)
+    }
+
+    context = {
+        'date': date,
+        'intakes': intakes,
+        'total_nutrients': total_nutrients,
+    }
+    return render(request, 'tracker/calorie_summary.html', context)
