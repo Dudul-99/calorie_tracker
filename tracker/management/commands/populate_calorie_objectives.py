@@ -1,5 +1,5 @@
 # tracker/management/commands/populate_calorie_objectives.py
-
+#python manage.py populate_calorie_objectives
 from django.core.management.base import BaseCommand
 from tracker.models import CalorieObjective
 
