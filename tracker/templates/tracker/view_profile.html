@@ -9,6 +9,13 @@
 <p>Height: {{ user.height|default:"Not provided" }} cm</p>
 <p>Weight: {{ user.weight|default:"Not provided" }} kg</p>
 <p>Gender: {{ user.get_gender_display|default:"Not provided" }}</p>
-<p>BMI: {{ bmi|default:"Not available" }}</p>
+<p>BMI: {{ user.calculate_bmi|default:"Not available" }}</p>
+<p>Daily Calorie Objective: 
+    {% if user.personal_calorie_objective %}
+        {{ user.personal_calorie_objective }} (Personal)
+    {% else %}
+        {{ user.get_daily_calorie_objective|default:"Not set" }} (Recommended)
+    {% endif %}
+</p>
 <a href="{% url 'tracker:edit_profile' %}">Edit Profile</a>
 {% endblock %}

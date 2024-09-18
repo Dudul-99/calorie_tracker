@@ -10,6 +10,25 @@
     <button type="submit">View Summary</button>
 </form>
 
+
+<h3>Daily Calorie Objective: {{ daily_objective|default:"Not set" }}</h3>
+{% if progress is not None %}
+    <p>Progress: {{ progress|floatformat:1 }}% of daily objective</p>
+    <progress value="{{ total_nutrients.calories }}" max="{{ daily_objective }}"></progress>
+{% endif %}
+
+<h3>Total Nutrients:</h3>
+<p>Calories: {{ total_nutrients.calories|floatformat:2 }} / {{ daily_objective|default:"N/A" }}</p>
+<p>Carbohydrates: {{ total_nutrients.carbs|floatformat:2 }}g</p>
+<p>Fats: {{ total_nutrients.fats|floatformat:2 }}g</p>
+<p>Proteins: {{ total_nutrients.proteins|floatformat:2 }}g</p>
+
+
+
+
+
+
+
 <h3>Total Nutrients:</h3>
 <p>Calories: {{ total_nutrients.calories|floatformat:2 }}</p>
 <p>Carbohydrates: {{ total_nutrients.carbs|floatformat:2 }}g</p>

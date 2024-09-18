@@ -4,6 +4,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, Food, Intake
 from django.utils import timezone
+from .models import CustomUser, CalorieObjective
 
 class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -15,7 +16,21 @@ class UserRegistrationForm(UserCreationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = CustomUser
-        fields = ['age', 'height', 'weight', 'gender']
+        fields = ['age', 'height', 'weight', 'gender', 'personal_calorie_objective']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['gender'].widget = forms.Select(choices=CalorieObjective.GENDER_CHOICES)
+        self.fields['personal_calorie_objective'].widget.attrs['placeholder'] = 'Leave blank to use recommended value'
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if user.gender and not user.personal_calorie_objective:
+            user.calorie_objective = CalorieObjective.objects.get(gender=user.gender)
+        if commit:
+            user.save()
+        return user
+
 
 class FoodForm(forms.ModelForm):
     class Meta:

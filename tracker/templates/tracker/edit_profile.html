@@ -1,3 +1,4 @@
+<!-- tracker/templates/tracker/edit_profile.html -->
 {% extends 'tracker/base.html' %}
 
 {% block content %}
@@ -7,4 +8,5 @@
     {{ form.as_p }}
     <button type="submit">Save Changes</button>
 </form>
+<p>Note: If you leave the personal calorie objective blank, the recommended value based on your gender will be used.</p>
 {% endblock %}

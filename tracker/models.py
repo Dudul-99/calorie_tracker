@@ -4,6 +4,23 @@ from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 
+# Create of models here.
+
+class CalorieObjective(models.Model):
+    GENDER_CHOICES = [
+        ('M', 'Male'),
+        ('F', 'Female'),
+        ('O', 'Other'),
+    ]
+    gender = models.CharField(max_length=1, choices=GENDER_CHOICES, unique=True)
+    daily_calories = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"{self.get_gender_display()} - {self.daily_calories} calories"
+
+
+
+
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     is_email_verified = models.BooleanField(default=False)
@@ -16,7 +33,15 @@ class CustomUser(AbstractUser):
         ('O', 'Other'),
     ]
     gender = models.CharField(max_length=1, choices=GENDER_CHOICES, null=True, blank=True)
+    calorie_objective = models.ForeignKey('CalorieObjective', on_delete=models.SET_NULL, null=True, blank=True)
+    personal_calorie_objective = models.PositiveIntegerField(null=True, blank=True)
 
+    def get_daily_calorie_objective(self):
+        if self.personal_calorie_objective:
+            return self.personal_calorie_objective
+        return self.calorie_objective.daily_calories if self.calorie_objective else None
+
+    
     def calculate_bmi(self):
         if self.height and self.weight:
             return round(self.weight / ((self.height / 100) ** 2), 2)
@@ -60,4 +85,5 @@ class Intake(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.food.name} - {self.datetime}"
+
 

@@ -131,9 +131,27 @@ def calorie_summary(request):
         'proteins': sum(intake.calculate_nutrients()['proteins'] for intake in intakes)
     }
 
+    daily_objective = request.user.get_daily_calorie_objective()
+    progress = (total_nutrients['calories'] / daily_objective * 100) if daily_objective else None
+
     context = {
         'date': date,
         'intakes': intakes,
         'total_nutrients': total_nutrients,
+        'daily_objective': daily_objective,
+        'progress': progress,
     }
+    
     return render(request, 'tracker/calorie_summary.html', context)
+
+@login_required
+def edit_profile(request):
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Your profile has been updated successfully.')
+            return redirect('tracker:view_profile')
+    else:
+        form = UserProfileForm(instance=request.user)
+    return render(request, 'tracker/edit_profile.html', {'form': form})
