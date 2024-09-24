@@ -1,110 +1,140 @@
 {% extends 'tracker/base.html' %}
-
 {% block content %}
-<h2>Calorie Summary for {{ date }}</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">Calorie Summary for {{ date }}</h2>
+    
+    <form method="get" class="mb-4">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <label class="sr-only" for="date">Select Date:</label>
+                <input type="date" class="form-control" id="date" name="date" value="{{ date|date:'Y-m-d' }}">
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">View Summary</button>
+            </div>
+        </div>
+    </form>
 
-<form method="get">
-    <label for="date">Select Date:</label>
-    <input type="date" id="date" name="date" value="{{ date|date:'Y-m-d' }}">
-    <button type="submit">View Summary</button>
-</form>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Daily Calorie Objective: {{ daily_objective|default:"Not set" }}</h3>
+            {% if progress is not None %}
+                <p>Progress: {{ progress|floatformat:1 }}% of daily objective</p>
+                <div class="progress mb-3">
+                    <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ progress|floatformat:1 }}%</div>
+                </div>
+            {% endif %}
 
-<h3>Daily Calorie Objective: {{ daily_objective|default:"Not set" }}</h3>
-{% if progress is not None %}
-    <p>Progress: {{ progress|floatformat:1 }}% of daily objective</p>
-    <progress value="{{ total_nutrients.calories }}" max="{{ daily_objective }}"></progress>
-{% endif %}
+            <h4>Total Nutrients:</h4>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">Calories: {{ total_nutrients.calories|floatformat:2 }} / {{ daily_objective|default:"N/A" }}</li>
+                <li class="list-group-item">Carbohydrates: {{ total_nutrients.carbs|floatformat:2 }}g</li>
+                <li class="list-group-item">Fats: {{ total_nutrients.fats|floatformat:2 }}g</li>
+                <li class="list-group-item">Proteins: {{ total_nutrients.proteins|floatformat:2 }}g</li>
+            </ul>
+        </div>
+    </div>
 
-<h3>Total Nutrients:</h3>
-<p>Calories: {{ total_nutrients.calories|floatformat:2 }} / {{ daily_objective|default:"N/A" }}</p>
-<p>Carbohydrates: {{ total_nutrients.carbs|floatformat:2 }}g</p>
-<p>Fats: {{ total_nutrients.fats|floatformat:2 }}g</p>
-<p>Proteins: {{ total_nutrients.proteins|floatformat:2 }}g</p>
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">7-Day Nutrient Overview</h3>
+                    <canvas id="nutrientChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title">Macronutrient Breakdown</h3>
+                    <canvas id="macroChart" width="200" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
-<div>
-    <h3>7-Day Nutrient Overview</h3>
-    <canvas id="nutrientChart" width="400" height="200"></canvas>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h3 class="card-title">Intakes:</h3>
+            <ul class="list-group">
+                {% for intake in intakes %}
+                    <li class="list-group-item">
+                        <strong>{{ intake.datetime|time:"H:i" }} - {{ intake.food.name }}</strong>
+                        ({{ intake.quantity }}{% if intake.food.is_liquid %}ml{% else %}g{% endif %})
+                        <br>
+                        <small>
+                            Calories: {{ intake.calculate_nutrients.calories|floatformat:2 }},
+                            Carbs: {{ intake.calculate_nutrients.carbs|floatformat:2 }}g,
+                            Fats: {{ intake.calculate_nutrients.fats|floatformat:2 }}g,
+                            Proteins: {{ intake.calculate_nutrients.proteins|floatformat:2 }}g
+                        </small>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">No intakes recorded for this day.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <a href="{% url 'tracker:add_intake' %}" class="btn btn-success mb-4">Add New Intake</a>
 </div>
-
-<div>
-    <h3>Macronutrient Breakdown</h3>
-    <canvas id="macroChart" width="200" height="200"></canvas>
-</div>
-
-<h3>Intakes:</h3>
-<ul>
-{% for intake in intakes %}
-    <li>
-        {{ intake.datetime|time:"H:i" }} - {{ intake.food.name }}
-        ({{ intake.quantity }}{% if intake.food.is_liquid %}ml{% else %}g{% endif %})
-        <br>
-        Calories: {{ intake.calculate_nutrients.calories|floatformat:2 }},
-        Carbs: {{ intake.calculate_nutrients.carbs|floatformat:2 }}g,
-        Fats: {{ intake.calculate_nutrients.fats|floatformat:2 }}g,
-        Proteins: {{ intake.calculate_nutrients.proteins|floatformat:2 }}g
-    </li>
-{% empty %}
-    <li>No intakes recorded for this day.</li>
-{% endfor %}
-</ul>
-
-<a href="{% url 'tracker:add_intake' %}">Add New Intake</a>
 
 <script>
-    // Nutrient Overview Chart
-    let ctx = document.getElementById('nutrientChart').getContext('2d');
-    let nutrientChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: {{ chart_data.labels|safe }},
-            datasets: [{
-                label: 'Calories',
-                data: {{ chart_data.calories|safe }},
-                borderColor: 'rgb(255, 99, 132)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
+// Nutrient Overview Chart
+let ctx = document.getElementById('nutrientChart').getContext('2d');
+let nutrientChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_data.labels|safe }},
+        datasets: [{
+            label: 'Calories',
+            data: {{ chart_data.calories|safe }},
+            borderColor: 'rgb(255, 99, 132)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
             }
         }
-    });
+    }
+});
 
-    // Macronutrient Breakdown Chart
-    let macroCtx = document.getElementById('macroChart').getContext('2d');
-    let macroChart = new Chart(macroCtx, {
-        type: 'pie',
-        data: {
-            labels: ['Carbs', 'Fats', 'Proteins'],
-            datasets: [{
-                data: [
-                    {{ total_nutrients.carbs|default:0 }},
-                    {{ total_nutrients.fats|default:0 }},
-                    {{ total_nutrients.proteins|default:0 }}
-                ],
-                backgroundColor: [
-                    'rgb(255, 99, 132)',
-                    'rgb(54, 162, 235)',
-                    'rgb(255, 205, 86)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: 'Macronutrient Breakdown'
-                }
+// Macronutrient Breakdown Chart
+let macroCtx = document.getElementById('macroChart').getContext('2d');
+let macroChart = new Chart(macroCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Carbs', 'Fats', 'Proteins'],
+        datasets: [{
+            data: [
+                {{ total_nutrients.carbs|default:0 }},
+                {{ total_nutrients.fats|default:0 }},
+                {{ total_nutrients.proteins|default:0 }}
+            ],
+            backgroundColor: [
+                'rgb(255, 99, 132)',
+                'rgb(54, 162, 235)',
+                'rgb(255, 205, 86)'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Macronutrient Breakdown'
             }
         }
-    });
+    }
+});
 </script>
 {% endblock %}
