@@ -1,11 +1,40 @@
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-<h1>Welcome to Calorie Tracker</h1>
-<p>Track your daily calorie intake with ease!</p>
-<ul>
-    <li><a href="{% url 'tracker:add_food' %}">Add New Food</a></li>
-    <li><a href="{% url 'tracker:add_intake' %}">Record Intake</a></li>
-    <li><a href="{% url 'tracker:calorie_summary' %}">View Calorie Summary</a></li>
-</ul>
+<div class="jumbotron text-center">
+    <h1 class="display-4">Welcome to Calorie Tracker</h1>
+    <p class="lead">Track your daily calorie intake with ease!</p>
+    <hr class="my-4">
+    <p>Get started by adding foods, recording your intake, or viewing your calorie summary.</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Add New Food</h5>
+                <p class="card-text">Add new foods to your database for easy tracking.</p>
+                <a href="{% url 'tracker:add_food' %}" class="btn btn-primary">Add Food</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Record Intake</h5>
+                <p class="card-text">Log your meals and snacks to keep track of your calorie consumption.</p>
+                <a href="{% url 'tracker:add_intake' %}" class="btn btn-primary">Record Intake</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">View Calorie Summary</h5>
+                <p class="card-text">See a summary of your calorie intake and nutritional information.</p>
+                <a href="{% url 'tracker:calorie_summary' %}" class="btn btn-primary">View Summary</a>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
