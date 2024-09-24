@@ -52,8 +52,8 @@
 
 <script>
     // Nutrient Overview Chart
-    var ctx = document.getElementById('nutrientChart').getContext('2d');
-    var nutrientChart = new Chart(ctx, {
+    let ctx = document.getElementById('nutrientChart').getContext('2d');
+    let nutrientChart = new Chart(ctx, {
         type: 'line',
         data: {
             labels: {{ chart_data.labels|safe }},
@@ -75,8 +75,8 @@
     });
 
     // Macronutrient Breakdown Chart
-    var macroCtx = document.getElementById('macroChart').getContext('2d');
-    var macroChart = new Chart(macroCtx, {
+    let macroCtx = document.getElementById('macroChart').getContext('2d');
+    let macroChart = new Chart(macroCtx, {
         type: 'pie',
         data: {
             labels: ['Carbs', 'Fats', 'Proteins'],
