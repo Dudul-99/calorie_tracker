@@ -1,12 +1,16 @@
-<!-- tracker/templates/tracker/edit_profile.html -->
 {% extends 'tracker/base.html' %}
+{% load crispy_forms_tags %}
 
 {% block content %}
-<h2>Edit Profile</h2>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save Changes</button>
-</form>
-<p>Note: If you leave the personal calorie objective blank, the recommended value based on your gender will be used.</p>
+<div class="container mt-4">
+    <h2 class="mb-4">Edit Profile</h2>
+    <form method="post">
+        {% csrf_token %}
+        {% crispy form %}
+        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+    </form>
+    <p class="mt-3 text-muted">
+        <small>Note: If you leave the personal calorie objective blank, the recommended value based on your gender will be used.</small>
+    </p>
+</div>
 {% endblock %}
