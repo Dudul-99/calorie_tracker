@@ -1,21 +1,32 @@
-<!-- tracker/templates/tracker/view_profile.html -->
 {% extends 'tracker/base.html' %}
 
 {% block content %}
-<h2>User Profile</h2>
-<p>Username: {{ user.username }}</p>
-<p>Email: {{ user.email }}</p>
-<p>Age: {{ user.age|default:"Not provided" }}</p>
-<p>Height: {{ user.height|default:"Not provided" }} cm</p>
-<p>Weight: {{ user.weight|default:"Not provided" }} kg</p>
-<p>Gender: {{ user.get_gender_display|default:"Not provided" }}</p>
-<p>BMI: {{ user.calculate_bmi|default:"Not available" }}</p>
-<p>Daily Calorie Objective: 
-    {% if user.personal_calorie_objective %}
-        {{ user.personal_calorie_objective }} (Personal)
-    {% else %}
-        {{ user.get_daily_calorie_objective|default:"Not set" }} (Recommended)
-    {% endif %}
-</p>
-<a href="{% url 'tracker:edit_profile' %}">Edit Profile</a>
+<div class="container mt-4">
+    <h2 class="mb-4">User Profile</h2>
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Username:</strong> {{ user.username }}</p>
+                    <p><strong>Email:</strong> {{ user.email }}</p>
+                    <p><strong>Age:</strong> {{ user.age|default:"Not provided" }}</p>
+                    <p><strong>Height:</strong> {{ user.height|default:"Not provided" }} cm</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Weight:</strong> {{ user.weight|default:"Not provided" }} kg</p>
+                    <p><strong>Gender:</strong> {{ user.get_gender_display|default:"Not provided" }}</p>
+                    <p><strong>BMI:</strong> {{ user.calculate_bmi|default:"Not available" }}</p>
+                    <p><strong>Daily Calorie Objective:</strong> 
+                        {% if user.personal_calorie_objective %}
+                            {{ user.personal_calorie_objective }} (Personal)
+                        {% else %}
+                            {{ user.get_daily_calorie_objective|default:"Not set" }} (Recommended)
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'tracker:edit_profile' %}" class="btn btn-primary mt-3">Edit Profile</a>
+</div>
 {% endblock %}
