@@ -109,6 +109,7 @@ def add_intake(request):
         form = IntakeForm()
     return render(request, 'tracker/add_intake.html', {'form': form})
 
+
 @login_required
 def calorie_summary(request):
     date = request.GET.get('date')
@@ -117,29 +118,60 @@ def calorie_summary(request):
     else:
         date = timezone.now().date()
 
-    next_day = date + timedelta(days=1)
+    # Get data for the last 7 days
+    start_date = date - timedelta(days=6)
+    end_date = date + timedelta(days=1)
+    
     intakes = Intake.objects.filter(
         user=request.user,
-        datetime__gte=date,
-        datetime__lt=next_day
+        datetime__gte=start_date,
+        datetime__lt=end_date
     ).order_by('datetime')
 
-    total_nutrients = {
-        'calories': sum(intake.calculate_nutrients()['calories'] for intake in intakes),
-        'carbs': sum(intake.calculate_nutrients()['carbs'] for intake in intakes),
-        'fats': sum(intake.calculate_nutrients()['fats'] for intake in intakes),
-        'proteins': sum(intake.calculate_nutrients()['proteins'] for intake in intakes)
+    # Prepare data for the chart
+    daily_totals = {}
+    for i in range(7):
+        current_date = start_date + timedelta(days=i)
+        daily_totals[current_date] = {
+            'calories': 0,
+            'carbs': 0,
+            'fats': 0,
+            'proteins': 0
+        }
+
+    for intake in intakes:
+        intake_date = intake.datetime.date()
+        nutrients = intake.calculate_nutrients()
+        daily_totals[intake_date]['calories'] += nutrients['calories']
+        daily_totals[intake_date]['carbs'] += nutrients['carbs']
+        daily_totals[intake_date]['fats'] += nutrients['fats']
+        daily_totals[intake_date]['proteins'] += nutrients['proteins']
+
+    # Prepare chart data
+    chart_data = {
+        'labels': [d.strftime("%Y-%m-%d") for d in daily_totals.keys()],
+        'calories': [total['calories'] for total in daily_totals.values()],
+        'carbs': [total['carbs'] for total in daily_totals.values()],
+        'fats': [total['fats'] for total in daily_totals.values()],
+        'proteins': [total['proteins'] for total in daily_totals.values()],
     }
 
+    # Calculate total nutrients for the selected date
+    selected_date_total = daily_totals[date]
+
+    # Get intakes for the selected date
+    selected_date_intakes = intakes.filter(datetime__date=date)
+
     daily_objective = request.user.get_daily_calorie_objective()
-    progress = (total_nutrients['calories'] / daily_objective * 100) if daily_objective else None
+    progress = (selected_date_total['calories'] / daily_objective * 100) if daily_objective else None
 
     context = {
         'date': date,
-        'intakes': intakes,
-        'total_nutrients': total_nutrients,
+        'total_nutrients': selected_date_total,
         'daily_objective': daily_objective,
         'progress': progress,
+        'chart_data': chart_data,
+        'intakes': selected_date_intakes,
     }
     
     return render(request, 'tracker/calorie_summary.html', context)
