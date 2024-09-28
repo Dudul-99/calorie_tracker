@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth import get_user_model
 from django.utils import timezone
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 # Create of models here.
 
 class CalorieObjective(models.Model):
@@ -24,9 +24,12 @@ class CalorieObjective(models.Model):
 class CustomUser(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     is_email_verified = models.BooleanField(default=False)
-    age = models.PositiveIntegerField(null=True, blank=True)
-    height = models.FloatField(null=True, blank=True, help_text="Height in cm")
-    weight = models.FloatField(null=True, blank=True, help_text="Weight in kg")
+    age = models.PositiveIntegerField(null=True, blank=True,
+                                      validators=[MinValueValidator(0), MaxValueValidator(120)])
+    height = models.FloatField(null=True, blank=True, help_text="Height in cm",
+                               validators=[MinValueValidator(0), MaxValueValidator(300)])
+    weight = models.FloatField(null=True, blank=True, help_text="Weight in kg",
+                               validators=[MinValueValidator(0), MaxValueValidator(500)])
     GENDER_CHOICES = [
         ('M', 'Male'),
         ('F', 'Female'),
